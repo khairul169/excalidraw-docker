@@ -1,0 +1,39 @@
+services:
+  app:
+    image: alswl/excalidraw:v0.17.3-fork-b1
+    restart: unless-stopped
+    environment:
+      - VITE_APP_BACKEND_V2_GET_URL=/storage/api/v2/scenes/
+      - VITE_APP_BACKEND_V2_POST_URL=/storage/api/v2/scenes/
+      - VITE_APP_WS_SERVER_URL=/
+      - VITE_APP_FIREBASE_CONFIG={}
+      - VITE_APP_HTTP_STORAGE_BACKEND_URL=/storage/api/v2
+      - VITE_APP_STORAGE_BACKEND=http
+      - VITE_APP_DISABLE_TRACKING=true
+      - PUBLIC_URL=
+    expose:
+      - "80"
+
+  storage:
+    image: alswl/excalidraw-storage-backend:v2023.11.11
+    restart: unless-stopped
+    environment:
+      - STORAGE_URI=postgres://postgres:postgres@host.docker.internal:5432/excalidraw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - "8080"
+
+  room:
+    image: excalidraw/excalidraw-room:sha-49bf529
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "9012:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
